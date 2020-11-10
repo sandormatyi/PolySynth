@@ -9,13 +9,15 @@ enum SynthParams {
 
   // Voice parameters
   Osc1Mix,
+  Osc1Type,
+  Osc1LFOAmp,
+  Osc1LFOFreq,
+
   Osc2Mix,
-  Osc3Mix,
-  Osc1Coarse,
-  Osc1DetuneLFOAmp,
-  Osc1DetuneLFOFreq,
-  Osc2PWMLFOAmp,
-  Osc2PWMLFOFreq,
+  Osc2Type,
+  Osc2LFOAmp,
+  Osc2LFOFreq,
+  
   EnvAttack,
   EnvDecay,
   EnvSustain,

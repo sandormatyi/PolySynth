@@ -11,7 +11,7 @@ class SynthEngine : public SynthParameter::Listener
 private:
   static constexpr int s_chorusDelayLength = 32 * AUDIO_BLOCK_SAMPLES;
   static constexpr int s_flangeDelayLength = 32 * AUDIO_BLOCK_SAMPLES;
-  static constexpr int s_numVoices = 16;
+  static constexpr int s_numVoices = 4;
 
 public:
   SynthEngine() = default;

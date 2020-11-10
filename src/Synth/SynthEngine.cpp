@@ -1,4 +1,4 @@
-#include "SynthEngine.h"
+#include "Synth/SynthEngine.h"
 
 SynthVoice* SynthEngine::getFirstFreeVoice()
 {

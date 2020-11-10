@@ -1,5 +1,5 @@
-#include "SynthVoice.h"
-#include "SynthEngine.h"
+#include "Synth/SynthVoice.h"
+#include "Synth/SynthEngine.h"
 
 void SynthVoice::playNote(MidiNote midiNote)
 {
@@ -10,16 +10,14 @@ void SynthVoice::playNote(MidiNote midiNote)
   isPlaying = true;
   note = midiNote;
 
-  const auto frequency = MidiNote::getFrequency(note.note);
-  const auto osc1Coarse = int(m_engine->getParam(SynthParams::Osc1Coarse).getValue());
-  const auto osc1Frequency = MidiNote::getFrequency(note.note + osc1Coarse);
-  const auto amplitude = note.velocity / 127.0;
+  //const auto frequency = MidiNote::getFrequency(note.note);
+  //const auto osc1Coarse = int(m_engine->getParam(SynthParams::Osc1Coarse).getValue());
+  //const auto osc1Frequency = MidiNote::getFrequency(note.note + osc1Coarse);
+  //const auto amplitude = note.velocity / 127.0;
 
   AudioNoInterrupts();
-  osc1.frequency(osc1Frequency);
-  osc2.frequency(frequency);
-  osc1.amplitude(amplitude);
-  osc2.amplitude(amplitude);
+  m_osc1.noteOn(midiNote.note, midiNote.velocity);
+  m_osc2.noteOn(midiNote.note, midiNote.velocity);
   envelopeAmp.noteOn();
   envelopeFilter.noteOn();
   AudioInterrupts();
@@ -39,18 +37,17 @@ void SynthVoice::init(SynthEngine* engine)
 {
   m_engine = engine;
 
-  noise.amplitude(0.2f);
-  detuneLfo.begin(WAVEFORM_SINE);
-  pwmLfo.begin(WAVEFORM_SINE);
+  m_osc1.init();
+  m_osc2.init();
 
   engine->getParam(SynthParams::Osc1Mix).addListener(this);
+  engine->getParam(SynthParams::Osc1Type).addListener(this);
+  engine->getParam(SynthParams::Osc1LFOAmp).addListener(this);
+  engine->getParam(SynthParams::Osc1LFOFreq).addListener(this);
   engine->getParam(SynthParams::Osc2Mix).addListener(this);
-  engine->getParam(SynthParams::Osc3Mix).addListener(this);
-  engine->getParam(SynthParams::Osc1Coarse).addListener(this);
-  engine->getParam(SynthParams::Osc1DetuneLFOAmp).addListener(this);
-  engine->getParam(SynthParams::Osc1DetuneLFOFreq).addListener(this);
-  engine->getParam(SynthParams::Osc2PWMLFOAmp).addListener(this);
-  engine->getParam(SynthParams::Osc2PWMLFOFreq).addListener(this);
+  engine->getParam(SynthParams::Osc2Type).addListener(this);
+  engine->getParam(SynthParams::Osc2LFOAmp).addListener(this);
+  engine->getParam(SynthParams::Osc2LFOFreq).addListener(this);
   engine->getParam(SynthParams::EnvAttack).addListener(this);
   engine->getParam(SynthParams::EnvDecay).addListener(this);
   engine->getParam(SynthParams::EnvSustain).addListener(this);
@@ -67,13 +64,13 @@ void SynthVoice::init(SynthEngine* engine)
 void SynthVoice::clear()
 {
   m_engine->getParam(SynthParams::Osc1Mix).removeListener(this);
+  m_engine->getParam(SynthParams::Osc1Type).removeListener(this);
+  m_engine->getParam(SynthParams::Osc1LFOAmp).removeListener(this);
+  m_engine->getParam(SynthParams::Osc1LFOFreq).removeListener(this);
   m_engine->getParam(SynthParams::Osc2Mix).removeListener(this);
-  m_engine->getParam(SynthParams::Osc3Mix).removeListener(this);
-  m_engine->getParam(SynthParams::Osc1Coarse).removeListener(this);
-  m_engine->getParam(SynthParams::Osc1DetuneLFOAmp).removeListener(this);
-  m_engine->getParam(SynthParams::Osc1DetuneLFOFreq).removeListener(this);
-  m_engine->getParam(SynthParams::Osc2PWMLFOAmp).removeListener(this);
-  m_engine->getParam(SynthParams::Osc2PWMLFOFreq).removeListener(this);
+  m_engine->getParam(SynthParams::Osc2Type).removeListener(this);
+  m_engine->getParam(SynthParams::Osc2LFOAmp).removeListener(this);
+  m_engine->getParam(SynthParams::Osc2LFOFreq).removeListener(this);
   m_engine->getParam(SynthParams::EnvAttack).removeListener(this);
   m_engine->getParam(SynthParams::EnvDecay).removeListener(this);
   m_engine->getParam(SynthParams::EnvSustain).removeListener(this);
@@ -103,22 +100,29 @@ void SynthVoice::parameterChanged(SynthParameter& param)
   case SynthParams::Osc2Mix:
     mixer.gain(1, param.getValue());
     break;
-  case SynthParams::Osc3Mix:
-    mixer.gain(2, param.getValue());
+  case SynthParams::Osc1Type:
+    Serial.printf("Osc type set to %d\n", int(param.getValue()));
+
+    m_osc1.setOscType(OscType(int(param.getValue())));
     break;
-  case SynthParams::Osc1DetuneLFOAmp:
-    detuneLfo.amplitude(param.getValue());
-    detuneLfo.offset(-param.getValue() / 2);
+  case SynthParams::Osc2Type:
+    Serial.printf("Osc type set to %d\n", int(param.getValue()));
+
+    m_osc2.setOscType(OscType(int(param.getValue())));
     break;
-  case SynthParams::Osc1DetuneLFOFreq:
-    detuneLfo.frequency(param.getValue());
+  case SynthParams::Osc1LFOAmp:
+    m_osc1.getLFO().amplitude(param.getValue());
+    m_osc1.getLFO().offset(-param.getValue() / 2);
     break;
-  case SynthParams::Osc2PWMLFOAmp:
-    pwmLfo.amplitude(param.getValue());
-    pwmLfo.offset(-param.getValue() / 2);
+  case SynthParams::Osc1LFOFreq:
+    m_osc1.getLFO().frequency(param.getValue());
     break;
-  case SynthParams::Osc2PWMLFOFreq:
-    pwmLfo.frequency(param.getValue());
+  case SynthParams::Osc2LFOAmp:
+    m_osc2.getLFO().amplitude(param.getValue());
+    m_osc2.getLFO().offset(-param.getValue() / 2);
+    break;
+  case SynthParams::Osc2LFOFreq:
+    m_osc2.getLFO().frequency(param.getValue());
     break;
   case SynthParams::EnvAttack:
     envelopeAmp.attack(param.getValue());

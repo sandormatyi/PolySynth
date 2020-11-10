@@ -1,8 +1,9 @@
 #pragma once
 
-#include <Audio.h>
 #include "MidiNote.h"
 #include "SynthParameter.h"
+#include "Synth/SynthOsc.h"
+#include <Audio.h>
 
 class SynthEngine;
 
@@ -26,26 +27,18 @@ public:
 
 private:
   SynthEngine* m_engine = nullptr;
+  SynthOsc m_osc1;
+  SynthOsc m_osc2;
 
-  AudioSynthWaveform detuneLfo;
-  AudioSynthWaveform pwmLfo;
-
-  AudioSynthWaveformSineModulated osc1;
-  AudioSynthWaveformPWM osc2;
-  AudioSynthNoisePink noise;
   AudioMixer4 mixer;
   AudioSynthWaveformDc filterDc;
   AudioFilterStateVariable filter;
   AudioEffectEnvelope envelopeFilter;
   AudioEffectEnvelope envelopeAmp;
 
-  AudioConnection patchCord5 = {detuneLfo, osc1};
-  AudioConnection patchCord2 = {osc1, 0, mixer, 0};
+  AudioConnection patchCord2 = {m_osc1.getOutput(), 0, mixer, 0};
+  AudioConnection patchCord1 = {m_osc2.getOutput(), 0, mixer, 1};
 
-  AudioConnection patchCord6 = {pwmLfo, osc2};
-  AudioConnection patchCord1 = {osc2, 0, mixer, 1};
-
-  AudioConnection patchCord3 = {noise, 0, mixer, 2};
   AudioConnection patchCord9 = {mixer, envelopeAmp};
   AudioConnection patchCord7 = {envelopeAmp, 0, filter, 0};
 

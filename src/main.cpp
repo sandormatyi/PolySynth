@@ -1,6 +1,6 @@
 #include "MidiNote.h"
-#include "SynthEngine.h"
-#include "SynthVoice.h"
+#include "Synth/SynthEngine.h"
+#include "Synth/SynthVoice.h"
 #include <Audio.h>
 #include <SD.h>
 #include <SPI.h>
@@ -67,11 +67,11 @@ void loop()
   if (time > lastPrintTime + 2000) {
     Serial.print("Proc = ");
     Serial.print(AudioProcessorUsage());
-    Serial.print(" (");    
+    Serial.print(" (");
     Serial.print(AudioProcessorUsageMax());
     Serial.print("),  Mem = ");
     Serial.print(AudioMemoryUsage());
-    Serial.print(" (");    
+    Serial.print(" (");
     Serial.print(AudioMemoryUsageMax());
     Serial.println(")");
     lastPrintTime = time;

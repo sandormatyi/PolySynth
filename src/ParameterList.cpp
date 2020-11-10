@@ -1,5 +1,6 @@
 #include "ParameterList.h"
 #include "SynthParameter.h"
+#include "Synth/SynthOsc.h"
 
 ParameterList::ParameterList()
 {
@@ -10,13 +11,15 @@ ParameterList::ParameterList()
 
   // Voice parameters
   ADD(Osc1Mix, 0.0f, 0.25f, 0.25f);
+  ADD(Osc1Type, -1.0f, float(int(OscType::NumTypes) - 1), 0.0f);
+  ADD(Osc1LFOAmp, 0.0f, 1.0f, 0.01f);
+  ADD(Osc1LFOFreq, 0.0f, 32.0f, 0.5f);
+
   ADD(Osc2Mix, 0.0f, 0.25f, 0.25f);
-  ADD(Osc3Mix, 0.0f, 0.25f, 0.25f);
-  ADD(Osc1Coarse, -24.0f, 24.0f, -12.0f);
-  ADD(Osc1DetuneLFOAmp, 0.0f, 1.0f, 0.01f);
-  ADD(Osc1DetuneLFOFreq, 0.0f, 32.0f, 0.5f);
-  ADD(Osc2PWMLFOAmp, 0.0f, 1.0f, 0.6f);
-  ADD(Osc2PWMLFOFreq, 0.0f, 32.0f, 0.5f);
+  ADD(Osc2Type, -1.0f, float(int(OscType::NumTypes) - 1), 0.0f);
+  ADD(Osc2LFOAmp, 0.0f, 1.0f, 0.6f);
+  ADD(Osc2LFOFreq, 0.0f, 32.0f, 0.5f);
+
   ADD(EnvAttack, 0.0f, 5000.0f, 10.5f);
   ADD(EnvDecay, 0.0f, 5000.0f, 2.5f);
   ADD(EnvSustain, 0.0f, 1.0f, 0.5f);
