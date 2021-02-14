@@ -80,6 +80,15 @@ bool SynthEngine::init()
   getParam(SynthParams::ReverbSize).addListener(this);
   getParam(SynthParams::ReverbDamping).addListener(this);
 
+  for (size_t i = 0; i < m_mixerVoiceGroups.size(); ++i) {
+    for (size_t j = 0; j < 4; ++j) {
+      m_mixerVoiceGroups[i].gain(j, 0.25f);
+    }
+  }
+  for (size_t i = 0; i < 4; ++i) {
+    m_mixerVoices.gain(i, 0.25f);
+  }
+
   m_master.enable();
   m_master.volume(1.0f);
   m_master.autoVolumeDisable();
